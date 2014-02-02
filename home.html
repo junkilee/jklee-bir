@@ -177,16 +177,27 @@ function init_robot_joints() {
 //////////////////////////////////////////////////
 
 // CS148: my_animate is where your robot's controls and movement are updated over time
+var x_pos = 0;
+
 function my_animate() {
 
     // CS148: INITIAL GETTING FAMILIAR CODE  (START HERE)
 
+    var jitter = true;
+
     // keyboard is threejs helper for reading keyboard state
-    if (keyboard.pressed("x")) 
+    if (keyboard.pressed("x")) {
         textbar.innerHTML = "moving up";  // make the pieces move up
-    else if (keyboard.pressed("z")) 
+        x_pos += 0.01;
+    } else if (keyboard.pressed("c")) {
+        textbar.innerHTML = "moving down";  // make the pieces move up
+        x_pos -= 0.01;
+    } else if (keyboard.pressed("z")) {
         textbar.innerHTML = "zzzzzz";  // stop jittering the pieces
-    else {
+        jitter = false;
+    } else {
+        jitter = true;
+        textbar.innerHTML = "Brown Bear Roars";
         // make the pieces jitter, and say something interesting
     }
 
@@ -204,8 +215,8 @@ function my_animate() {
     // dirty way to get number of keys in an object
     jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;  
     for (x in robot.joints) {
-        jsmat[1][3] = 2+Math.random()*0.02;  // Math object has lots of helpful functions
-        jsmat[2][3] = Math.random()*0.02;
+        jsmat[1][3] = x_pos + 2 + (jitter ? Math.random()*0.02 : 0.0);  // Math object has lots of helpful functions
+        jsmat[2][3] = (jitter ? Math.random()*0.02 : 0.0);
         threemat = matrix_2Darray_to_threejs(jsmat); 
         simpleApplyMatrix(robot.joints[x].geom,threemat);
         jsmat[0][3] += spacing;
@@ -213,8 +224,8 @@ function my_animate() {
 
     jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;
     for (x in robot.links) {
-        jsmat[1][3] = 1+Math.random()*0.02;
-        jsmat[2][3] = Math.random()*0.02;
+        jsmat[1][3] = x_pos + 1 + (jitter ? Math.random()*0.02 : 0.0);
+        jsmat[2][3] = (jitter ? Math.random()*0.02 : 0.0);
         threemat = matrix_2Darray_to_threejs(jsmat);
         simpleApplyMatrix(robot.links[x].geom,threemat);
         jsmat[0][3] += spacing;
