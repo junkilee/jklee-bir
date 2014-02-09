@@ -1,4 +1,7 @@
-1 into Assignment-1. Please use Assignment-X for branching of Assignment X
+15: Jun Ki Lee 
+ 
+ Assignment 1: CHECK 
+ github will translate 'Assignment 1' into 'Assignment-1'. Please use 'Assignment-X' for branching of Assignment X
  branch lables are case sensitive
  
 
