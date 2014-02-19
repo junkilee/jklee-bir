@@ -111,7 +111,6 @@ function init() {
     // reminder of init_robot() ...
 
     // CS148: uncomment after implementing joints in kinematic hierarchy 
-    /*
     // initialize the active link/joint for control
     active_link = robot.base;
     active_joint = robot.links[active_link].children[0];
@@ -119,7 +118,6 @@ function init() {
     //robot.links[active_link].geom.material.opacity = 0.5; 
     robot.joints[active_joint].display_geom.material.wireframe = false; 
     robot.joints[active_joint].display_geom.material.opacity = 0.5; 
-    */
 
     // !!! change this to scale geometries or scale view
     // scaling geometries for view
@@ -183,7 +181,7 @@ function init_robot_joints_geoms() {
             
         // CS148: uncomment this if you have vector_cross implemented
         // (need to find better factoring)
-        /*
+        
         // if joint axis not aligned with y-axis, rotate 3js cylinder axis to align with y
         if (!((robot.joints[x].axis[0] == 0) && (robot.joints[x].axis[2] == 0))) {
             var tempaxis = vector_cross(robot.joints[x].axis,[0,-1,0]);
@@ -192,7 +190,7 @@ function init_robot_joints_geoms() {
             var tempangle = Math.acos(robot.joints[x].axis[1]);
             robot.joints[x].display_geom.rotateOnAxis(temp3axis,tempangle);
         }
-        */
+        
         scene.add(robot.joints[x].geom);
         robot.joints[x].geom.add(robot.joints[x].display_geom);
 

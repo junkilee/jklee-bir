@@ -38,18 +38,18 @@
 <script src="robots/robot_urdf_example.js"></script> 
 <script src="robots/robot_crawler.js"></script> 
 -->
-<script src="robots/robot_br2.js"></script> 
+<script src="robots/robot_urdf_example.js"></script> 
  
 <!-- 3jsbot includes -->
 <script src="3jsbot.js"></script> 
+<script src="3jsbot_forward_kinematics.js"></script>
+<script src="3jsbot_matrix.js"></script>
 <!--
-<script src="3jsbot_forward_kinematics.js"></script> 
 <script src="3jsbot_controls.js"></script> 
 <script src="3jsbot_pd_control.js"></script> 
 <script src="3jsbot_inverse_kinematics.js"></script> 
 <script src="3jsbot_potential_field.js"></script> 
 <script src="3jsbot_rrt_connect.js"></script> 
-<script src="3jsbot_matrix.js"></script> 
 <script src="3jsbot_quaternion.js"></script> 
 -->
 <script src="3jsbot_threejs.js"></script> 
@@ -164,6 +164,12 @@ function init_robot_joints() {
         console.log(robot.joints[x].child); // to print the child link of joints for example
 
         // CONSTRUCT KINEMATIC HIERARCHY
+        if (robot.links[robot.joints[x].parent].children) {
+            robot.links[robot.joints[x].parent].children.push(x);
+        } else {
+            robot.links[robot.joints[x].parent].children = [x];
+        }
+        robot.links[robot.joints[x].child].parent = x;
     }
 
     // CS148: do not remove, this is used to create threejs geometries
@@ -183,7 +189,7 @@ function my_animate() {
 
     // CS148: INITIAL GETTING FAMILIAR CODE  (START HERE)
 
-    var jitter = true;
+    var jitter = false;
 
     // keyboard is threejs helper for reading keyboard state
     if (keyboard.pressed("x")) {
@@ -194,9 +200,9 @@ function my_animate() {
         x_pos -= 0.01;
     } else if (keyboard.pressed("z")) {
         textbar.innerHTML = "zzzzzz";  // stop jittering the pieces
-        jitter = false;
-    } else {
         jitter = true;
+    } else {
+        jitter = false;
         textbar.innerHTML = "Brown Bear Roars";
         // make the pieces jitter, and say something interesting
     }
@@ -243,7 +249,7 @@ function my_animate() {
     // DRAW ROBOT 
 
     // forward kinematics over robot links
-    //robot_forward_kinematics();
+    robot_forward_kinematics();
 
     // HANDLE USER CONTROLS
 

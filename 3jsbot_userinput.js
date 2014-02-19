@@ -44,10 +44,12 @@ function user_input() {
     /* CS148: user input for controlling joints */ 
     // incrment/decrement angle of active joint 
     if ( keyboard.pressed("u") ) {
-        robot.joints[active_joint].control += 0.01;  // add motion increment 
+        if (active_joint)
+            robot.joints[active_joint].control += 0.01;  // add motion increment 
     }
     else if ( keyboard.pressed("i") ) {
-        robot.joints[active_joint].control += -0.01;  // add motion increment 
+        if (active_joint) 
+            robot.joints[active_joint].control += -0.01;  // add motion increment 
     }
 
     /* CS148: user input for base movement

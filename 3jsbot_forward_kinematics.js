@@ -18,4 +18,64 @@ traverse_forward_kinematics_joint
 compute_and_draw_heading
 */
 
+/**
+ * retrieves a rotation matrix for rpy (x_theta, y_theta, z_theta)
+ */
+function generate_rotation_matrix(rpy) {
+	if (typeof(rpy) === 'object') {
+		matrix = generate_rotation_matrix_X(rpy[0]);
+		matrix = matrix_multiply(matrix, generate_rotation_matrix_Y(rpy[1]));
+		return matrix_multiply(matrix, generate_rotation_matrix_Z(rpy[2]));
+	} else
+		return null;
+}
 
+/**
+ * calculates tranformation matrices for the entire robot model
+ */
+function robot_forward_kinematics() {
+	robot.origin.xform = generate_translation_matrix(robot.origin.xyz);
+	robot.origin.xform = matrix_multiply(robot.origin.xform, generate_rotation_matrix(robot.origin.rpy));
+	traverse_forward_kinematics_link(robot.base);
+}
+
+/**
+ * calculates tranformation matrices for each link
+ */
+function traverse_forward_kinematics_link(link) {
+	if (robot.links[link].parent) {
+		robot.links[link].xform = robot.joints[robot.links[link].parent].xform;
+	} else {
+		robot.links[link].xform = robot.origin.xform;		
+	}
+	
+	var tempmat = matrix_2Darray_to_threejs(robot.links[link].xform);
+  simpleApplyMatrix(robot.links[link].geom, tempmat);
+
+  if (robot.links[link].children) {
+  	for (i in robot.links[link].children) {
+  		traverse_forward_kinematics_joint(robot.links[link].children[i], robot.links[link].xform);
+  	}
+  }  
+}
+
+/**
+ * calculates tranformation matrices for each joint
+ */
+function traverse_forward_kinematics_joint(joint) {
+	parent_link = robot.joints[joint].parent;
+	robot.joints[joint].origin.xform = matrix_multiply(robot.links[parent_link].xform, 
+																										 generate_translation_matrix(robot.joints[joint].origin.xyz));
+	robot.joints[joint].origin.xform = matrix_multiply(robot.joints[joint].origin.xform, 
+																										 generate_rotation_matrix(robot.joints[joint].origin.rpy));
+	robot.joints[joint].xform = matrix_multiply(robot.joints[joint].origin.xform, 
+		                                          generate_identity());
+	var tempmat = matrix_2Darray_to_threejs(robot.joints[joint].xform);
+  simpleApplyMatrix(robot.joints[joint].geom, tempmat);
+
+  if (robot.joints[joint].child)
+  	traverse_forward_kinematics_link(robot.joints[joint].child, robot.joints[joint].xform);
+}
+
+function compute_and_draw_heading() {
+}
