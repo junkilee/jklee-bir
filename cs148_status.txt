@@ -1,7 +1,14 @@
-15: Jun Ki Lee 
+14: Sarah Parker 
  
  Assignment 1: CHECK 
+ code works properly, but need to create branches for individual assignments for completion checks
+ a check can be granted once proper branch is in place 
+ be sure to follow appropriate input key mappings for future assignments 
  github will translate 'Assignment 1' into 'Assignment-1'. Please use 'Assignment-X' for branching of Assignment X
  branch lables are case sensitive
+ comment: branch is now found properly
+ 
+ Assignment 2: CHECK 
+ good work 
  
 
