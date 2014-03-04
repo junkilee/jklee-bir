@@ -53,29 +53,35 @@ function init() {
     pendulum = {length:2.0, mass:2.0, angle:Math.PI/2, angle_dot:0.0};
 
     // initialize pendulum controls
+    pendulum.control_on = true;
     pendulum.control = 0;
-    pendulum.desired = -Math.PI/2.5;
+    pendulum.desired = -Math.PI/2.5 + 0.20;
     pendulum.desired_dot = 0;
-
+	
     // initialize pendulum PID servo gains
-    pendulum.servo = {kp:0.0, kd:0.0, ki:0.0};
+    pendulum.servo = {kp:200.0, kd:70.0, ki:38.0};
     accumulated_error = 0;
 
     // set time and timestep 
     t = 0;
-    dt = 1.0;
+    dt = 0.04;
     
     // set gravity
-    gravity = 0.01;
+    gravity = 9.81;
 
     // set method of numerical integration of dynamics
-    numerical_integrator = "euler";  // REQUIRED
-    //numerical_integrator = "verlet";  // OPTIONAL
-    //numerical_integrator = "velocity verlet";  // REQUIRED
+    //numerical_integrator = "euler";  // DONE
+    //numerical_integrator = "verlet";  // DONE
+    numerical_integrator = "velocity verlet";  // DONE
     //numerical_integrator = "runge-kutta";  // OPTIONAL
 
     init_threejs_scene();
 
+    if (numerical_integrator == "verlet") {
+        pendulum.previous_angle = pendulum.angle;
+        acceleration = get_acceleration();
+        pendulum.angle = pendulum.angle + pendulum.angle_dot * dt + 0.5 * acceleration * dt * dt;
+    }
 }
 
 
@@ -91,6 +97,7 @@ function animate() {
     // http://learningwebgl.com/blog/?p=3189
     requestAnimationFrame( animate );
 
+    control = process_pid_control();
 
     // key inputs for adding force to pendulum motor
     if ( keyboard.pressed("d") )
@@ -99,38 +106,80 @@ function animate() {
         pendulum.control += -0.05;
 
     // key inputs for setting desired angle for pendulum servo
-    if ( keyboard.pressed("e") )
+    if ( keyboard.pressed("e") ) {
         pendulum.desired += 0.05;
-    if ( keyboard.pressed("q") )
+        pendulum.accumulated_error = 0.0;
+    }
+    if ( keyboard.pressed("q") ) {
         pendulum.desired += -0.05;
+        pendulum.accumulated_error = 0.0;
+    }
 
     // key input to zero controls and let pendulum swing
-    if ( keyboard.pressed("s") )
+    if ( keyboard.pressed("x") )
+        pendulum.control_on = !pendulum.control_on;
+
+    // key input to zero controls and let pendulum swing
+    if ( keyboard.pressed("s") || !pendulum.control_on )
         pendulum.control = 0;
+
 
     // update pendulum state with integrator using current acceleration
     if (numerical_integrator === "verlet") {
+        acceleration = get_acceleration();
+        next_angle = 2 * pendulum.angle - pendulum.previous_angle + acceleration * dt * dt;
+        next_next_angle = 2 * next_angle - pendulum.angle + acceleration * dt * dt;
+        pendulum.previous_angle = pendulum.angle;
+        pendulum.angle_dot = (next_next_angle - pendulum.angle) / (2 * dt);
+        pendulum.angle = next_angle;
+
         // basic verlet integration
     }
     else if (numerical_integrator === "velocity verlet") {
         // velocity version of verlet integration
+        current_angle = pendulum.angle;
+        current_velocity = pendulum.angle_dot;
+        current_acceleration = get_acceleration();
+        
+        pendulum.angle = current_angle + current_velocity * dt + 0.5 * current_acceleration * dt * dt;
+        
+        next_acceleration = get_acceleration();
+
+        pendulum.angle_dot = current_velocity + (current_acceleration + next_acceleration) / 2 * dt
     }
     else if (numerical_integrator === "runge-kutta") {
         // RK4, fourth-order Runge-Kutta integration
+        // f(t, y) = velocity of y given t
+        x1 = pendulum.angle;
+        v1 = pendulum.angle_dot;
+        k1 = pendulum.angle_dot;
+        x2 = x1 + dt / 2 * k1;
+        k2 = v1 + 0.5 * dt * get_acceleration(x2);
+        x3 = x1 + dt / 2 * k2;
+        k3 = v1 + 0.5 * dt * get_acceleration(x3);
+        x4 = x1 + dt * k3;
+        k4 = v1 + dt * get_acceleration(x4);
+        pendulum.angle = pendulum.angle + 1/6 * dt * (k1 + 2 * k2 + 2 * k3 + k4);
+        pendulum.angle_dot = pendulum.angle_dot + dt * get_acceleration();
     } 
     else {
         // euler integration
+        pendulum.angle = pendulum.angle + dt * pendulum.angle_dot;
+        pendulum.angle_dot = pendulum.angle_dot + dt * get_acceleration();
 
         numerical_integrator = "euler";
     }
 
+    pendulum.control = control;
+
     // set the current state/angle of the pendulum
     pendulum.geom.rotation.y = pendulum.angle;  // threejs cylinders have their axes along the y-axis
-    pendulum.angle += Math.PI/160;  // REMOVE THIS!!! just to show how angle is ued
+    //pendulum.angle += Math.PI/160;  // REMOVE THIS!!! just to show how angle is ued
 
     // don't forget to advance time
+    t = t + dt;
 
-    /* output simulator variables
+    // output simulator variables
     textbar.innerHTML = 
         " t = " + t.toFixed(2) + 
         " dt = " + dt.toFixed(2) + 
@@ -142,15 +191,32 @@ function animate() {
         " l = " + pendulum.length.toFixed(2) +
         " integrator = " + numerical_integrator
     ;
-    */
 
     // threejs rendering update
     renderer.render( scene, camera );
 
 }
 
+function get_acceleration(x) {
+    if (!x)
+        x = pendulum.angle;
+	return - gravity / pendulum.length * Math.sin(x) +  
+           pendulum.control / (pendulum.mass * pendulum.length * pendulum.length);
+}
+
 function system_acceleration(x_current,v_current,t_current) {
     // return a_t for current pendulum state
+	return - gravity / pendulum.length * Math.sin(x_current) +  
+           pendulum.control / (pendulum.mass * pendulum.length * pendulum.length);
+}
+
+function process_pid_control() {
+    error = pendulum.desired - pendulum.angle;
+    accumulated_error += error * dt;
+    error_dot = pendulum.desired_dot - pendulum.angle_dot;
+    return pendulum.servo.kp * error +
+           pendulum.servo.kd * error_dot +
+           pendulum.servo.ki * accumulated_error;
 }
 
 <!-- //////////////////////////////////////////////////
@@ -272,10 +338,6 @@ function init_threejs_scene() {
     pendulum_mass = new THREE.Mesh(temp_geom, temp_material);
     pendulum_mass.position = {x:0,y:-pendulum.length/2,z:0};
     pendulum_link.add(pendulum_mass);
-
-
-
-
 }
 
 </script>
