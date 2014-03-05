@@ -49,6 +49,9 @@ animate();
 
 function init() {
 
+    angle_max = -10000000.0;
+    angle_min = 10000000.0;
+
     // create pendulum and its kinematic and dynamic parameters
     pendulum = {length:2.0, mass:2.0, angle:Math.PI/2, angle_dot:0.0};
 
@@ -64,7 +67,7 @@ function init() {
 
     // set time and timestep 
     t = 0;
-    dt = 0.04;
+    dt = 0.05;
     
     // set gravity
     gravity = 9.81;
@@ -72,8 +75,8 @@ function init() {
     // set method of numerical integration of dynamics
     //numerical_integrator = "euler";  // DONE
     //numerical_integrator = "verlet";  // DONE
-    numerical_integrator = "velocity verlet";  // DONE
-    //numerical_integrator = "runge-kutta";  // OPTIONAL
+    //numerical_integrator = "velocity verlet";  // DONE
+    numerical_integrator = "runge-kutta";  // OPTIONAL
 
     init_threejs_scene();
 
@@ -88,7 +91,6 @@ function init() {
 //////////////////////////////////////////////////
 /////     ANIMATION AND INTERACTION LOOP
 //////////////////////////////////////////////////
-
 function animate() {
 
     // note: three.js includes requestAnimationFrame shim
@@ -97,7 +99,7 @@ function animate() {
     // http://learningwebgl.com/blog/?p=3189
     requestAnimationFrame( animate );
 
-    control = process_pid_control();
+    pendulum.control = process_pid_control();
 
     // key inputs for adding force to pendulum motor
     if ( keyboard.pressed("d") )
@@ -114,16 +116,17 @@ function animate() {
         pendulum.desired += -0.05;
         pendulum.accumulated_error = 0.0;
     }
-
+    
     // key input to zero controls and let pendulum swing
-    if ( keyboard.pressed("x") )
-        pendulum.control_on = !pendulum.control_on;
-
-    // key input to zero controls and let pendulum swing
-    if ( keyboard.pressed("s") || !pendulum.control_on )
+    if ( keyboard.pressed("s") )
         pendulum.control = 0;
 
-
+    if ( keyboard.pressed("i") ) {
+        angle_max = -10000000.0;
+        angle_min = 100000000.0;
+    }
+    
+    previous_angle = pendulum.angle;
     // update pendulum state with integrator using current acceleration
     if (numerical_integrator === "verlet") {
         acceleration = get_acceleration();
@@ -152,25 +155,33 @@ function animate() {
         // f(t, y) = velocity of y given t
         x1 = pendulum.angle;
         v1 = pendulum.angle_dot;
-        k1 = pendulum.angle_dot;
-        x2 = x1 + dt / 2 * k1;
-        k2 = v1 + 0.5 * dt * get_acceleration(x2);
-        x3 = x1 + dt / 2 * k2;
-        k3 = v1 + 0.5 * dt * get_acceleration(x3);
-        x4 = x1 + dt * k3;
-        k4 = v1 + dt * get_acceleration(x4);
-        pendulum.angle = pendulum.angle + 1/6 * dt * (k1 + 2 * k2 + 2 * k3 + k4);
-        pendulum.angle_dot = pendulum.angle_dot + dt * get_acceleration();
+        a1 = get_acceleration(x1);
+        x2 = x1 + dt / 2 * v1;
+        v2 = v1 + 0.5 * dt * get_acceleration(x1);
+        a2 = get_acceleration(x2);
+        x3 = x1 + dt / 2 * v2;
+        v3 = v1 + 0.5 * dt * get_acceleration(x2);
+        a3 = get_acceleration(x3);
+        x4 = x1 + dt * v3;
+        v4 = v1 + dt * get_acceleration(x3);
+        a4 = get_acceleration(x4);
+        pendulum.angle = pendulum.angle + 1/6 * dt * (v1 + 2 * v2 + 2 * v3 + v4);
+        pendulum.angle_dot = pendulum.angle_dot + 1/6 * dt * (a1 + 2 * a2 + 2 * a3 + a4);
     } 
     else {
         // euler integration
-        pendulum.angle = pendulum.angle + dt * pendulum.angle_dot;
-        pendulum.angle_dot = pendulum.angle_dot + dt * get_acceleration();
+        previous_velocity = pendulum.angle_dot;
+        previous_acceleration = get_acceleration();
+        pendulum.angle = pendulum.angle + dt * previous_velocity;
+        pendulum.angle_dot = pendulum.angle_dot + dt * previous_acceleration;
 
         numerical_integrator = "euler";
     }
 
-    pendulum.control = control;
+    if (previous_angle >=0 && pendulum.angle < 0)
+        angle_min = 100000000;
+    if (previous_angle <0 && pendulum.angle >= 0)
+        angle_max = -100000000;
 
     // set the current state/angle of the pendulum
     pendulum.geom.rotation.y = pendulum.angle;  // threejs cylinders have their axes along the y-axis
@@ -179,6 +190,10 @@ function animate() {
     // don't forget to advance time
     t = t + dt;
 
+    if (angle_max < pendulum.angle) 
+        angle_max = pendulum.angle;
+    if (angle_min > pendulum.angle) 
+        angle_min = pendulum.angle;
     // output simulator variables
     textbar.innerHTML = 
         " t = " + t.toFixed(2) + 
@@ -189,7 +204,9 @@ function animate() {
         " u = " + pendulum.control.toFixed(2) +
         " m = " + pendulum.mass.toFixed(2) +
         " l = " + pendulum.length.toFixed(2) +
-        " integrator = " + numerical_integrator
+        " integrator = " + numerical_integrator + 
+        " angle_min = " + angle_min +
+        " angle_max = " + angle_max
     ;
 
     // threejs rendering update
