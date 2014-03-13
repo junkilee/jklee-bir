@@ -45,43 +45,54 @@ function user_input() {
     // incrment/decrement angle of active joint 
     if ( keyboard.pressed("u") ) {
         if (active_joint)
-            robot.joints[active_joint].control += 0.01;  // add motion increment 
+            robot.joints[active_joint].angle += 0.01;  // add motion increment 
     }
     else if ( keyboard.pressed("i") ) {
         if (active_joint) 
-            robot.joints[active_joint].control += -0.01;  // add motion increment 
+            robot.joints[active_joint].angle += -0.01;  // add motion increment 
+    }
+    if ( keyboard.pressed("y") ) {
+        if (active_joint)
+            robot.joints[active_joint].control = 0.00;  // add motion increment 
     }
 
-    /* CS148: user input for base movement
+    /* CS148: user input for base movement  */
     // move robot base in the ground plane
+    base_move_pressed = false;
     if ( keyboard.pressed("a") ) {  // turn
-        robot.control.rpy[1] += 0.1;
+        robot.control.rpy[1] = 0.1;
+        base_move_pressed = true;
     }
     if ( keyboard.pressed("d") ) {  // turn
-        robot.control.rpy[1] += -0.1;
+        robot.control.rpy[1] = -0.1;
+        base_move_pressed = true;
     }
 
     if ( keyboard.pressed("w") ) {  // forward
         //robot.origin.xyz[2] += 0.1;  // simple but ineffective: not aligned with robot
-        robot.control.xyz[2] += 0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += 0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] = 0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] = 0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        base_move_pressed = true;
     }
     if ( keyboard.pressed("s") ) {  // backward
         //robot.origin.xyz[2] -= 0.1; // simple but ineffective: not aligned with robot
-        robot.control.xyz[2] += -0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += -0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] = -0.1 * (robot_heading[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] = -0.1 * (robot_heading[0][0]-robot.origin.xyz[0]);
+        base_move_pressed = true;
     }
     if ( keyboard.pressed("q") ) {  // strafe
         //robot.origin.xyz[0] += 0.1; // simple but ineffective: not aligned with robot
 
-        robot.control.xyz[2] += 0.1 * (robot_lateral[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += 0.1 * (robot_lateral[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] = 0.1 * (robot_lateral[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] = 0.1 * (robot_lateral[0][0]-robot.origin.xyz[0]);
+        base_move_pressed = true;
     }
     if ( keyboard.pressed("e") ) {  // strafe
         // robot.origin.xyz[0] -= 0.1; // simple but ineffective: not aligned with robot
 
-        robot.control.xyz[2] += -0.1 * (robot_lateral[2][0]-robot.origin.xyz[2]);
-        robot.control.xyz[0] += -0.1 * (robot_lateral[0][0]-robot.origin.xyz[0]);
+        robot.control.xyz[2] = -0.1 * (robot_lateral[2][0]-robot.origin.xyz[2]);
+        robot.control.xyz[0] = -0.1 * (robot_lateral[0][0]-robot.origin.xyz[0]);
+        base_move_pressed = true;
     }
 
     /* CS148: user input for executing inverse kinematics iterations */
@@ -97,7 +108,13 @@ function user_input() {
         ik_target[1][0] += 0.01;
     if ( keyboard.pressed("f") )  // ik target down
         ik_target[1][0] -= 0.01;
-}
+
+    if (!base_move_pressed) {
+    robot.control.rpy[1] = 0;
+    robot.control.xyz[2] = 0;
+    robot.control.xyz[0] = 0;
+    }
+} 
 
 
 /* CS148: user input for joint selection */

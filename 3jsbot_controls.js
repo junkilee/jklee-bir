@@ -15,6 +15,15 @@ function robot_apply_controls() {
     camera_controls.object.position.y += robot.control.xyz[1];
     camera_controls.object.position.z += robot.control.xyz[2];
 
+    robot.origin.xyz[0] += robot.control.xyz[0];
+    robot.origin.xyz[1] += robot.control.xyz[1];
+    robot.origin.xyz[2] += robot.control.xyz[2];
+    robot.origin.rpy[0] += robot.control.rpy[0];
+    robot.origin.rpy[1] += robot.control.rpy[1];
+    robot.origin.rpy[2] += robot.control.rpy[2];
+
+    for (x in robot.joints) {
+    	robot.joints[x].angle += robot.joints[x].control;
+    	robot.joints[x].angle = robot.joints[x].angle % (Math.PI * 2);
+    }
 }
-
-

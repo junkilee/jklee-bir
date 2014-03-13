@@ -118,6 +118,13 @@ function generate_translation_matrix(xyz) {
 				  [0, 0, 0, 1]];
 }
 
+function generate_translation_matrix_from_vector_matrix(xyz) {
+	return [[1, 0, 0, xyz[0][0]],
+				  [0, 1, 0, xyz[1][0]],
+				  [0, 0, 1, xyz[2][0]],
+				  [0, 0, 0, 1]];
+}
+
 /**
  * retrieves a rotation matrix in x axis given x theta in radian
  */

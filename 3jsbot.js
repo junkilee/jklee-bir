@@ -124,7 +124,16 @@ function init() {
     //tempmat = new THREE.Matrix4();
     //tempmat.makeScale(scale_factor,scale_factor,scale_factor);
     //scene.applyMatrix(tempmat);
+    
+    var temp_geom = new THREE.CubeGeometry(0.3, 0.3, 0.3);
+    var temp_material = new THREE.MeshBasicMaterial( {color: 0x00ffff} )
+    heading_geom = new THREE.Mesh(temp_geom, temp_material);
+    scene.add(heading_geom);
 
+    var temp_geom = new THREE.CubeGeometry(0.3, 0.3, 0.3);
+    var temp_material = new THREE.MeshBasicMaterial( {color: 0x008888} )
+    lateral_geom = new THREE.Mesh(temp_geom, temp_material); 
+    scene.add(lateral_geom);
 }
 
 

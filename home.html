@@ -44,13 +44,13 @@
 <script src="3jsbot.js"></script> 
 <script src="3jsbot_forward_kinematics.js"></script>
 <script src="3jsbot_matrix.js"></script>
-<!--
 <script src="3jsbot_controls.js"></script> 
 <script src="3jsbot_pd_control.js"></script> 
+<script src="3jsbot_quaternion.js"></script> 
+<!--
 <script src="3jsbot_inverse_kinematics.js"></script> 
 <script src="3jsbot_potential_field.js"></script> 
 <script src="3jsbot_rrt_connect.js"></script> 
-<script src="3jsbot_quaternion.js"></script> 
 -->
 <script src="3jsbot_threejs.js"></script> 
 <script src="3jsbot_userinput.js"></script> 
@@ -93,12 +93,13 @@ function my_init() {
     copied_object = my_object;
     copied_object.subject = "autonomous_robotics";  // what is my_object.subject on the console?
 
+    /*
     my_array = [8, 6, 7, 5, 3, 0, 9]; 
     my_array[6] = 'ni-i-i-ine';
     var i;  // local variable
     for (i=0;i<my_array.length;i++) {
         console.log(my_array[i]);
-    }
+    }*/
 
     textbar = document.createElement('div');
     textbar.style.position = 'absolute';
@@ -143,7 +144,8 @@ function init_robot_links() {
     init_robot_links_geoms();
 
     // initialize controls for robot base link
-    robot.control = {xyz: [0,0,0], rpy:[0,0,0]}; 
+    robot.control = {xyz: [0,0,0], rpy:[0,0,0]};
+    
 }
 
 
@@ -161,6 +163,9 @@ function init_robot_joints() {
 
         // give the joint its name as an id
         robot.joints[x].name = x;
+        robot.joints[x].angle = 0;
+        robot.joints[x].control = 0;
+        robot.joints[x].servo = {p_desired: 0, p_gain: 0.03};
         console.log(robot.joints[x].child); // to print the child link of joints for example
 
         // CONSTRUCT KINEMATIC HIERARCHY
@@ -244,7 +249,7 @@ function my_animate() {
     // ROBOT DYNAMICS 
 
     // apply robot controls to robot configuration (assuming pure kinematics for now)
-    //robot_apply_controls();
+    robot_apply_controls();
 
     // DRAW ROBOT 
 
@@ -259,11 +264,11 @@ function my_animate() {
     // UPDATE AUTONOMOUS CONTROLS 
 
     // proportional-derivative control 
-    /*
+    
     if (update_pd)
         robot_pd_control();
     update_pd = false;
-    */
+    
 
     // inverse kinematics
     //robot_inverse_kinematics(ik_target, "forearm_right_yaw", ik_local);

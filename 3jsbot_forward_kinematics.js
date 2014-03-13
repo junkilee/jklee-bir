@@ -34,8 +34,21 @@ function generate_rotation_matrix(rpy) {
  * calculates tranformation matrices for the entire robot model
  */
 function robot_forward_kinematics() {
+	var heading_local = [[1], [0], [0], [1]];
+	var lateral_local = [[0], [0], [1], [1]];
+
 	robot.origin.xform = generate_translation_matrix(robot.origin.xyz);
 	robot.origin.xform = matrix_multiply(robot.origin.xform, generate_rotation_matrix(robot.origin.rpy));
+
+	robot_heading = matrix_multiply(robot.origin.xform, heading_local);
+	heading_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_heading));
+
+	robot_lateral = matrix_multiply(robot.origin.xform, lateral_local);
+	lateral_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_lateral));
+
+	simpleApplyMatrix(heading_geom,heading_mat);
+  simpleApplyMatrix(lateral_geom,lateral_mat);
+
 	traverse_forward_kinematics_link(robot.base);
 }
 
@@ -68,8 +81,11 @@ function traverse_forward_kinematics_joint(joint) {
 																										 generate_translation_matrix(robot.joints[joint].origin.xyz));
 	robot.joints[joint].origin.xform = matrix_multiply(robot.joints[joint].origin.xform, 
 																										 generate_rotation_matrix(robot.joints[joint].origin.rpy));
-	robot.joints[joint].xform = matrix_multiply(robot.joints[joint].origin.xform, 
-		                                          generate_identity());
+	
+	/* applying joint angles */
+	q = quaternion_from_axisangle(robot.joints[joint].axis, robot.joints[joint].angle);
+	rotq = quaternion_to_rotation_matrix(q);
+	robot.joints[joint].xform = matrix_multiply(robot.joints[joint].origin.xform, rotq);
 	var tempmat = matrix_2Darray_to_threejs(robot.joints[joint].xform);
   simpleApplyMatrix(robot.joints[joint].geom, tempmat);
 
