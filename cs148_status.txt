@@ -10,4 +10,8 @@
  comment: good to see vector_cross implement for joint rotation
  comment: Brown Bear Roars! 
  
+ Assignment 3: CHECK 
+ comment: servo a bit overstiff, but working
+ comment: good to see RK4 implemented!
+ 
 
