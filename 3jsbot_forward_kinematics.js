@@ -90,7 +90,7 @@ function traverse_forward_kinematics_joint(joint) {
   simpleApplyMatrix(robot.joints[joint].geom, tempmat);
 
   if (robot.joints[joint].child)
-  	traverse_forward_kinematics_link(robot.joints[joint].child, robot.joints[joint].xform);
+  	traverse_forward_kinematics_link(robot.joints[joint].child);
 }
 
 function compute_and_draw_heading() {
