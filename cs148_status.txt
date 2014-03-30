@@ -14,8 +14,10 @@
  comment: servo a bit overstiff, but working
  comment: good to see RK4 implemented!
  
- Assignment 4: UNCHECKED
+ Assignment 4: CHECK
  error: quaternion rotation error for br2 example
  comment: other examples appear to work properly
+ regrade: working properly
+ comment: very smooth P control
  
 
