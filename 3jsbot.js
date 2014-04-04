@@ -95,12 +95,12 @@ function init() {
 
     // create geometry for endeffector and Cartesian target indicators
     var temp_geom = new THREE.CubeGeometry(0.3, 0.3, 0.3);
-    var temp_material = new THREE.MeshBasicMaterial( {color: 0x0088ff} )
+    var temp_material = new THREE.MeshBasicMaterial( {color: 0x0088ff} ) //blue
     endeffector_geom = new THREE.Mesh(temp_geom, temp_material); // comment this for coolness
     scene.add(endeffector_geom);
     endeffector_geom.visible = false;
     temp_geom = new THREE.CubeGeometry(0.3, 0.3, 0.3);
-    temp_material = new THREE.MeshBasicMaterial( {color: 0x00ff00} )
+    temp_material = new THREE.MeshBasicMaterial( {color: 0x00ff00} ) // green
     target_geom = new THREE.Mesh(temp_geom, temp_material); // comment this for coolness
     scene.add(target_geom);
     target_geom.visible = false;

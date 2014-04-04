@@ -34,21 +34,11 @@ function generate_rotation_matrix(rpy) {
  * calculates tranformation matrices for the entire robot model
  */
 function robot_forward_kinematics() {
-	var heading_local = [[1], [0], [0], [1]];
-	var lateral_local = [[0], [0], [1], [1]];
-
 	robot.origin.xform = generate_translation_matrix(robot.origin.xyz);
 	robot.origin.xform = matrix_multiply(robot.origin.xform, generate_rotation_matrix(robot.origin.rpy));
 
-	robot_heading = matrix_multiply(robot.origin.xform, heading_local);
-	heading_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_heading));
-
-	robot_lateral = matrix_multiply(robot.origin.xform, lateral_local);
-	lateral_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_lateral));
-
-	simpleApplyMatrix(heading_geom,heading_mat);
-  simpleApplyMatrix(lateral_geom,lateral_mat);
-
+	compute_and_draw_heading()
+	
 	traverse_forward_kinematics_link(robot.base);
 }
 
@@ -59,7 +49,7 @@ function traverse_forward_kinematics_link(link) {
 	if (robot.links[link].parent) {
 		robot.links[link].xform = robot.joints[robot.links[link].parent].xform;
 	} else {
-		robot.links[link].xform = robot.origin.xform;		
+		robot.links[link].xform = robot.origin.xform;
 	}
 	
 	var tempmat = matrix_2Darray_to_threejs(robot.links[link].xform);
@@ -69,7 +59,7 @@ function traverse_forward_kinematics_link(link) {
   	for (i in robot.links[link].children) {
   		traverse_forward_kinematics_joint(robot.links[link].children[i], robot.links[link].xform);
   	}
-  }  
+  }
 }
 
 /**
@@ -94,4 +84,15 @@ function traverse_forward_kinematics_joint(joint) {
 }
 
 function compute_and_draw_heading() {
+	var heading_local = [[1], [0], [0], [1]];
+	var lateral_local = [[0], [0], [1], [1]];
+
+	robot_heading = matrix_multiply(robot.origin.xform, heading_local);
+	heading_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_heading));
+
+	robot_lateral = matrix_multiply(robot.origin.xform, lateral_local);
+	lateral_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(robot_lateral));
+
+	simpleApplyMatrix(heading_geom,heading_mat);
+  simpleApplyMatrix(lateral_geom,lateral_mat);
 }

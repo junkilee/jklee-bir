@@ -43,6 +43,8 @@ function user_input() {
 
     /* CS148: user input for controlling joints */ 
     // incrment/decrement angle of active joint 
+    control_pressed = false;
+
     if ( keyboard.pressed("u") ) {
         if (active_joint)
             robot.joints[active_joint].angle += 0.01;  // add motion increment 
@@ -96,12 +98,16 @@ function user_input() {
     }
 
     /* CS148: user input for executing inverse kinematics iterations */
-    if ( keyboard.pressed("p") )
+    if ( keyboard.pressed("p") ) {
+        control_pressed = true;
         update_ik = true;
+    }
 
     /* CS148: user input for executing proportional derivative servo */
-    if ( keyboard.pressed("o") )
+    if ( keyboard.pressed("o") ) {
+        control_pressed = true;
         update_pd = true;
+    }
 
     /* CS148: user input for moving IK target up/down */
     if ( keyboard.pressed("r") )   // ik target up
@@ -110,9 +116,15 @@ function user_input() {
         ik_target[1][0] -= 0.01;
 
     if (!base_move_pressed) {
-    robot.control.rpy[1] = 0;
-    robot.control.xyz[2] = 0;
-    robot.control.xyz[0] = 0;
+        robot.control.rpy[1] = 0;
+        robot.control.xyz[2] = 0;
+        robot.control.xyz[0] = 0;
+    }
+
+    if (!control_pressed) {
+        for (joint in robot.joints) {
+            robot.joints[joint].control = 0;
+        }
     }
 } 
 

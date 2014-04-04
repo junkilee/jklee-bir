@@ -35,8 +35,8 @@
 <!-- definition of robot kinematics -->
 <!-- CS148: change this script pointer to change the robot definition -->
 <!--
-<script src="robots/robot_urdf_example.js"></script> 
 <script src="robots/robot_crawler.js"></script>  
+<script src="robots/robot_urdf_example.js"></script> 
 -->
 <script src="robots/robot_br2.js"></script> 
 
@@ -47,8 +47,8 @@
 <script src="3jsbot_controls.js"></script> 
 <script src="3jsbot_pd_control.js"></script> 
 <script src="3jsbot_quaternion.js"></script> 
-<!--
 <script src="3jsbot_inverse_kinematics.js"></script> 
+<!--
 <script src="3jsbot_potential_field.js"></script> 
 <script src="3jsbot_rrt_connect.js"></script> 
 -->
@@ -271,7 +271,8 @@ function my_animate() {
     
 
     // inverse kinematics
-    //robot_inverse_kinematics(ik_target, "forearm_right_yaw", ik_local);
+    robot_inverse_kinematics(ik_target, "forearm_right_yaw", [[0],[0],[0.5],[1]]);
+    // robot_inverse_kinematics(ik_target, "joint3", [[0],[0],[0.5],[1]]);
 
     // configuration space motion planning
     //robot_rrt_connect(q_desired);
