@@ -26,6 +26,7 @@ function robot_inverse_kinematics(target_pos, endeffector_joint, endeffector_loc
 
 function iterate_inverse_kinematics(target_pos, endeffector_joint, endeffector_local_pos) {
     var joints_list = [];
+    target_pos_ = target_pos;
     current_joint = endeffector_joint
     while (current_joint != '') {
         joints_list.unshift(current_joint)
@@ -116,8 +117,11 @@ function iterate_inverse_kinematics(target_pos, endeffector_joint, endeffector_l
     // draw endeffector and target position indicators
     var endeffector_mat = matrix_2Darray_to_threejs(transforms[n]);
     simpleApplyMatrix(endeffector_geom,endeffector_mat);
-    
-    var target_mat = matrix_2Darray_to_threejs(generate_translation_matrix(target_pos));
+   
+    if (navigator.userAgent.indexOf("Firefox")!=-1) 
+        var target_mat = matrix_2Darray_to_threejs(generate_translation_matrix_from_vector_matrix(target_pos_));
+    else
+        var target_mat = matrix_2Darray_to_threejs(generate_translation_matrix(target_pos_));
     simpleApplyMatrix(target_geom,target_mat);
 }
 
