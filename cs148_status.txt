@@ -20,4 +20,8 @@
  regrade: working properly
  comment: very smooth P control
  
+ Assignment 5: UNCHECKED
+ error: target location not displayed
+ comment: IK methods look correct, but need to be verified
+ 
 
