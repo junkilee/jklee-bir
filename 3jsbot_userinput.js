@@ -115,6 +115,53 @@ function user_input() {
     if ( keyboard.pressed("f") )  // ik target down
         ik_target[1][0] -= 0.01;
 
+    // reset camera to face robot
+    if ( keyboard.pressed("z") ) {
+        camera.position.x = robot.origin.xyz[0];
+        camera.position.y = robot.origin.xyz[1]+1;
+        camera.position.z = robot.origin.xyz[2]+4;
+    }
+
+    // generate motion plan
+    if ( keyboard.pressed("m") )
+        generate_motion_plan = true;
+    else
+        generate_motion_plan = false;
+
+    // traverse generated motion plan
+    if ( keyboard.pressed("n") |  keyboard.pressed("b")) {
+        if (typeof robot_path !== 'undefined') {
+            // increment index
+            if (keyboard.pressed("n") && (robot_path_traverse_idx<robot_path.length-1))
+                robot_path_traverse_idx++;
+            if (keyboard.pressed("b") && (robot_path_traverse_idx>0))
+                robot_path_traverse_idx--;
+
+            if (robot_path_traverse_idx < 0)
+                robot_path_traverse_idx = 0;
+            if (robot_path_traverse_idx >= robot_path.length)
+                robot_path_traverse_idx = robot_path.length - 1;
+
+            // set angle
+            robot.origin.xyz = [
+                robot_path[robot_path_traverse_idx].vertex[0],
+                robot_path[robot_path_traverse_idx].vertex[1],
+                robot_path[robot_path_traverse_idx].vertex[2]
+            ];
+
+            robot.origin.rpy = [
+                robot_path[robot_path_traverse_idx].vertex[3],
+                robot_path[robot_path_traverse_idx].vertex[4],
+                robot_path[robot_path_traverse_idx].vertex[5]
+            ];
+
+            for (x in robot.joints) {
+                //q_names[x] = q_start_config.length;
+                robot.joints[x].angle = robot_path[robot_path_traverse_idx].vertex[q_names[x]];
+            }
+        }
+    }
+
     if (!base_move_pressed) {
         robot.control.rpy[1] = 0;
         robot.control.xyz[2] = 0;

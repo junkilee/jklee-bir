@@ -1,4 +1,3 @@
-
 function robot_set_planning_scene() {
     // currently just sets rendering geometries
     // world defined by robot_boundary and robot_obstacles objects in separate js include
@@ -96,7 +95,7 @@ function robot_collision_test(q) {
 function robot_collision_forward_kinematics (q) { 
 
     // transform robot base into the global world coordinates
-    var mstack = matrix_multiply(generate_translation_matrix(q[0],q[1],q[2]),matrix_multiply(matrix_multiply(generate_rotation_matrix_Z(q[5]),generate_rotation_matrix_Y(q[4])),generate_rotation_matrix_X(q[3])));
+    var mstack = matrix_multiply(generate_translation_matrix([q[0],q[1],q[2]]),matrix_multiply(matrix_multiply(generate_rotation_matrix_Z(q[5]),generate_rotation_matrix_Y(q[4])),generate_rotation_matrix_X(q[3])));
 
     // recurse kinematics, testing collisions at each link
     return traverse_collision_forward_kinematics_link(robot.links[robot.base],mstack,q);
@@ -106,10 +105,8 @@ function robot_collision_forward_kinematics (q) {
 function traverse_collision_forward_kinematics_link(link,mstack,q) {
 
     // test collision by transforming obstacles in world to link space
-    mstack_inv = matrix_invert_affine(mstack);
-/*
+    // mstack_inv = matrix_invert_affine(mstack);
     mstack_inv = numeric.inv(mstack);
-*/
 
     var i;
     var j;
@@ -165,7 +162,7 @@ function traverse_collision_forward_kinematics_joint(joint,mstack,q) {
     var mstack_top = matrix_multiply(mstack,generate_identity());
 
     // compute matrix transform origin of joint in the local space of the parent link
-    var local_xform = matrix_multiply(generate_translation_matrix(joint.origin.xyz[0],joint.origin.xyz[1],joint.origin.xyz[2]),matrix_multiply(matrix_multiply(generate_rotation_matrix_Z(joint.origin.rpy[2]),generate_rotation_matrix_Y(joint.origin.rpy[1])),generate_rotation_matrix_X(joint.origin.rpy[0])));
+    var local_xform = matrix_multiply(generate_translation_matrix([joint.origin.xyz[0],joint.origin.xyz[1],joint.origin.xyz[2]]),matrix_multiply(matrix_multiply(generate_rotation_matrix_Z(joint.origin.rpy[2]),generate_rotation_matrix_Y(joint.origin.rpy[1])),generate_rotation_matrix_X(joint.origin.rpy[0])));
 
     // push local transform to origin to the top of the matrix stack
     var mstack_origin_top = matrix_multiply(mstack,local_xform)
@@ -183,6 +180,3 @@ function traverse_collision_forward_kinematics_joint(joint,mstack,q) {
     return traverse_collision_forward_kinematics_link(robot.links[joint.child],mstack_top,q);
 
 }
-
-
-

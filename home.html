@@ -48,12 +48,20 @@
 <script src="3jsbot_pd_control.js"></script> 
 <script src="3jsbot_quaternion.js"></script> 
 <script src="3jsbot_inverse_kinematics.js"></script> 
-<!--
-<script src="3jsbot_potential_field.js"></script> 
 <script src="3jsbot_rrt_connect.js"></script> 
+<script src="3jsbot_collision.js"></script>
+<script src="worlds/world_s.js"></script>
+<!--
+<script src="worlds/world_random.js"></script>
+<script src="worlds/world_empty.js"></script>
+<script src="worlds/world_local_minima.js"></script>
+<script src="worlds/world_basic.js"></script>
 -->
 <script src="3jsbot_threejs.js"></script> 
 <script src="3jsbot_userinput.js"></script> 
+<!--
+<script src="3jsbot_potential_field.js"></script> 
+-->
 
 <script>
 
@@ -75,6 +83,8 @@ animate();
 function my_init() {
 
     init_robot();  // initialize robot kinematics
+
+    robot_set_planning_scene();
 
     // CS148: INITIAL GETTING FAMILIAR CODE  (START HERE)
 
@@ -131,6 +141,9 @@ function init_robot() {
     // initialize inverse kinematics target location 
     ik_target = [[0],[0.8],[1.0],[1]];
 
+    // initialize flags for executing planner
+    generating_motion_plan = false;
+    generate_motion_plan = false;
 }
 
 // CS148: nothing to add here 
@@ -285,7 +298,24 @@ function my_animate() {
     // if we have time this semester
     //robot_potential_field(x_desired);
 
+    // show if robot is currently in collision
+    robot_iscollision();
 
+    // configuration space motion planning
+    if ((generate_motion_plan) && (!generating_motion_plan)) {
+        robot_rrt_planner_init();
+        generating_motion_plan = true;
+        generate_motion_plan = false;
+    }
+    if (generating_motion_plan) {
+        //robot_rrt_connect(q_desired);
+        rrt_result = robot_rrt_planner_iterate();
+        if (rrt_result === "reached") {
+            console.log('home : reached!!!!!!!!!');
+            robot_path_traverse_idx = 0;
+            generating_motion_plan = false;
+        }
+    }
 }
 
 
