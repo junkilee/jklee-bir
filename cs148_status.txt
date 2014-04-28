@@ -25,4 +25,7 @@
  comment: IK methods look correct, but need to be verified
  regrade: browser issue: working in chrome, target not displayed in firefox
  
+ Assignment 6: CHECK
+ comment: minor convergence issues in some test cases
+ 
 
