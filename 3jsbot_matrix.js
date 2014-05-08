@@ -76,6 +76,13 @@ function vector_normalize(vec) {
 	// return numeric.div(vec, Math.sqrt(numeric.sum(numeric.dot(vec, vec))));
 }
 
+function vector_mag(vec) {
+	sum = 0;
+	for (i=0; i<vec.length; i++) {
+		sum = sum + vec[i] * vec[i];
+	}
+	return Math.sqrt(sum);
+}
 /**
  * retrieves a cross vector from two vectors
  */

@@ -14,8 +14,8 @@ start_tree = null;
 goal_tree = null;
 tree_a = null;
 tree_b = null;
-rrt_epsilon_pos = 0.15;
-rrt_epsilon_ang = 0.08;
+rrt_epsilon_pos = 0.2;
+rrt_epsilon_ang = 0.2;
 
 /**
  * Initializes the RRT planner
@@ -130,13 +130,42 @@ function get_epsilon(number, ispos) {
 
 function new_config(q_near, q) {
     var q_new = [];
+    var q_diff1 = [];
+    var q_diff2 = [];
+
     for (i=0; i<3; i++) {
-        q_new[i] = q_near[i] +  get_epsilon(q[i] - q_near[i], true);
-        console.log(i + ' ' + get_epsilon(q[i] - q_near[i], true));
+        q_diff1[i] = q[i] - q_near[i];
     }
     for (i=3; i<q_near.length; i++) {
-        q_new[i] = q_near[i] + get_epsilon(q[i] - q_near[i], false);
+        q_diff2.push(q[i] - q_near[i]);
     }
+
+    var q_norm_diff1 = vector_normalize(q_diff1);
+    var q_norm_diff2 = vector_normalize(q_diff2);
+
+    if (vector_mag(q_diff1) <= rrt_epsilon_pos) {
+        for (i=0; i<3; i++) {
+            q_new[i] = q_near[i] + q_diff1[i];
+        }
+    } else {
+        for (i=0; i<3; i++) {
+            q_new[i] = q_near[i] + q_norm_diff1[i] * rrt_epsilon_pos;
+        }
+    }
+
+    if (vector_mag(q_diff2) <= rrt_epsilon_ang) {
+        for (i=3; i<q_near.length; i++) {
+            q_new[i] = q_near[i] + q_diff2[i-3];
+        }
+    } else {
+        for (i=3; i<q_near.length; i++) {
+            q_new[i] = q_near[i] + q_norm_diff2[i-3] * rrt_epsilon_ang;
+        }
+    }
+    console.log("new one created..");
+
+    // new way of implmenting this
+    // get a difference vector for both position and angles and make it as a unit vector and multiply with epsilon.
 
     if (robot_collision_test(q_new))
         return null;
@@ -180,34 +209,36 @@ function nearest_neighbor(tree, q) {
  * checks if the destination is close so that it can be directly picked as a neighbor
  */
 function distance_check(q_new, q) {
-    pos_diff = 0;
-    ang_diff = 0;
+    var q_diff1 = [];
+    var q_diff2 = [];
+
     for (i=0; i<3; i++) {
-        pos_diff += Math.abs(q[i] - q_new[i]);
+        q_diff1[i] = q_new[i] - q[i];
     }
-    for (i=3; i<q.length; i++) {
-        ang_diff += Math.abs(q[i] - q_new[i]);
+    for (i=3; i<q_new.length; i++) {
+        q_diff2.push(q_new[i] - q[i]);
     }
 
-    if (((pos_diff / 3.0) < (rrt_epsilon_pos * 0.33)) &&
-        ((ang_diff / (q.length - 3)) < (rrt_epsilon_ang * 0.33)))
+    if ((vector_mag(q_diff1) < rrt_epsilon_pos * 1.5) && (vector_mag(q_diff2) < rrt_epsilon_ang * 1.5)) {
         return true;
+    }
     return false;
 }
 
 function reach_check(q_new, q) {
-    pos_diff = 0;
-    ang_diff = 0;
+    var q_diff1 = [];
+    var q_diff2 = [];
+
     for (i=0; i<3; i++) {
-        pos_diff += Math.abs(q[i] - q_new[i]);
+        q_diff1[i] = q_new[i] - q[i];
     }
-    for (i=3; i<q.length; i++) {
-        ang_diff += Math.abs(q[i] - q_new[i]);
+    for (i=3; i<q_new.length; i++) {
+        q_diff2.push(q_new[i] - q[i]);
     }
 
-    if (((pos_diff / 3.0) < (rrt_epsilon_pos / 100.0)) &&
-        ((ang_diff / (q.length - 3)) < (rrt_epsilon_ang / 100.0)))
+    if ((vector_mag(q_diff1) < rrt_epsilon_pos) && (vector_mag(q_diff2) < rrt_epsilon_ang)) {
         return true;
+    }
     return false;
 }
 
@@ -231,6 +262,7 @@ function rrt_connect(tree, q_index) {
     s = 'advanced';
     while (s == 'advanced') {
         s = rrt_extend(tree, q_index);
+        console.log('connecting..   ' + s);
     }
     return s;
 }
